@@ -9,13 +9,19 @@ public class Friction : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
-        
     }
 
-    // Update is called once per frame
     void FixedUpdate()
     {
-        Vector2 frictionalForce = -rb.velocity.normalized * frictionCoefficient * rb.mass;
-        rb.AddForce(frictionalForce, ForceMode2D.Force);
+        rb.AddForce(getFrictionalForce(), ForceMode2D.Force);
+    }
+
+    public Vector2 getFrictionalForce() {
+        return -rb.velocity.normalized * frictionCoefficient * rb.mass;
+    }
+
+    // only created for testing purposes, never use for actual game functions
+    public void setRigidbody(Rigidbody2D rigidbody) {
+        rb = rigidbody;
     }
 }
