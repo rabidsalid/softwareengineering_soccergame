@@ -12,7 +12,6 @@ public class GoButtonHandler : MonoBehaviour
     }
     public void OnButtonClick()
     {
-        Console.WriteLine("Go button clicked");
         _gameManager.endTurn();
     }
 }

@@ -74,7 +74,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 2
   m_Sprite: {fileID: 21300000, guid: bcd11a7fcd36ffa48ba64e357af366e3, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -151,3 +151,4 @@ MonoBehaviour:
   arrowPrefab: {fileID: 9002611093076484096, guid: 5020fc5e9b1101f48bcab68ed131dd8f, type: 3}
   maxArrowDistance: 100
   maxForce: 100
+  team: 0

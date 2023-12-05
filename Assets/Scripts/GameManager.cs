@@ -2,11 +2,25 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
     private static GameManager _instance;
-    public static GameManager Instance { get { return _instance; } }
+    public static GameManager Instance
+    {
+        get
+        {
+            if (_instance == null)
+            {
+                GameObject managerObject = new GameObject("GameManager");
+                _instance = managerObject.AddComponent<GameManager>();
+                DontDestroyOnLoad(managerObject);
+            }
+            return _instance;
+        }
+    }
+
 
     public int TeamoneScore { get { return _teamoneScore; } set { _teamoneScore = value; } }
     public int TeamtwoScore { get { return _teamtwoScore; } set { _teamtwoScore = value; } }
@@ -16,20 +30,48 @@ public class GameManager : MonoBehaviour
     public ReleaseArrowDelegate releaseArrows;
 
     private int _gameState;
-    private int _teamoneScore;
-    private int _teamtwoScore;
+    public int _teamoneScore;
+    public int _teamtwoScore;
     private int _arrowCount;
+    private ScoreController _scoreController;
     private void Awake() {
-        if (_instance == null) {
-            _instance = this;
-        } else {
-            Destroy(this.gameObject);
+        if (_instance != null && _instance != this)
+        {
+            Destroy(gameObject);
+            return;
         }
+        _instance = this;
+        CurrentGameState = GameState.PlayerOneTurn;
+        _scoreController = GameObject.Find("Score").GetComponent<ScoreController>();
+
     }
 
     public void endTurn() {
         if (ArrowCount == 3) {
             releaseArrows();
+            releaseArrows = null;
+            if (CurrentGameState == GameState.PlayerOneTurn) {
+                CurrentGameState = GameState.PlayerTwoTurn;
+            } else if (CurrentGameState == GameState.PlayerTwoTurn) {
+                CurrentGameState = GameState.PlayerOneTurn;
+            }
         }
+    }
+
+    public void resetRound(int whoScored) {
+        if (TeamoneScore == 2 || TeamtwoScore == 2) {
+            SceneManager.LoadScene("EndScreen");
+        }
+        else {
+            SceneManager.LoadScene("Game");
+            if (whoScored == 1) {
+                TeamtwoScore++;
+                CurrentGameState = GameState.PlayerOneTurn;
+            } else if (whoScored == 0) {
+                TeamoneScore++;
+                CurrentGameState = GameState.PlayerTwoTurn;
+            }
+        }
+
     }
 }
