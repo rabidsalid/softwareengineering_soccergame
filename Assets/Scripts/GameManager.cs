@@ -28,6 +28,7 @@ public class GameManager : MonoBehaviour
     public int ArrowCount { get { return _arrowCount; } set { _arrowCount = value; } }
     public delegate void ReleaseArrowDelegate();
     public ReleaseArrowDelegate releaseArrows;
+    public int reqWins = 2;
 
     private int _gameState;
     public int _teamoneScore;
@@ -58,19 +59,21 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public void resetRound(int whoScored) {
-        if (TeamoneScore == 2 || TeamtwoScore == 2) {
-            SceneManager.LoadScene("EndScreen");
+    public void resetRound(int whoScored) 
+    {
+        SceneManager.LoadScene("Game");
+        if (whoScored == 1) {
+            TeamtwoScore++;
+            CurrentGameState = GameState.PlayerOneTurn;
+        } else if (whoScored == 0) {
+            TeamoneScore++;
+            CurrentGameState = GameState.PlayerTwoTurn;
         }
-        else {
-            SceneManager.LoadScene("Game");
-            if (whoScored == 1) {
-                TeamtwoScore++;
-                CurrentGameState = GameState.PlayerOneTurn;
-            } else if (whoScored == 0) {
-                TeamoneScore++;
-                CurrentGameState = GameState.PlayerTwoTurn;
-            }
+
+        if (TeamoneScore == reqWins || TeamtwoScore == reqWins) {
+            SceneManager.LoadScene("GameOver");
+            TeamoneScore = 0;
+            TeamtwoScore = 0;
         }
 
     }
