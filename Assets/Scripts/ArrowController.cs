@@ -1,6 +1,4 @@
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class ArrowController : MonoBehaviour
@@ -8,11 +6,13 @@ public class ArrowController : MonoBehaviour
 public GameObject arrowPrefab;
     public float maxArrowDistance = 5f;
     public float maxForce = 10f;
+    public int team = 0; // 1 for red 0 for orange
 
     private GameObject currentArrow;
     private Vector3 arrowStartPos;
     private bool arrowActive = false;
     private GameManager _gameManager;
+    private SpriteRenderer _spriteRenderer;
 
     void Update()
     {
@@ -22,29 +22,34 @@ public GameObject arrowPrefab;
     void Awake()
     {
         _gameManager = GameManager.Instance;
+        if (team == 1) {
+            _spriteRenderer = GetComponent<SpriteRenderer>();
+                _spriteRenderer.color = Color.red;
+        }
     }
 
     void HandleInput()
     {
         if (Input.GetMouseButtonDown(0))
         {
-            if (IsMouseOverPlayer())
+            if ((_gameManager.CurrentGameState == GameState.PlayerOneTurn && team == 0) || _gameManager.CurrentGameState == GameState.PlayerTwoTurn && team == 1)
             {
-                if (!arrowActive && _gameManager.ArrowCount < 3)
+                if (IsMouseOverPlayer())
                 {
-                    StartDrawingArrow();
+                    if (!arrowActive && _gameManager.ArrowCount < 3)
+                    {
+                        StartCoroutine(DrawArrowCoroutine());
+                    }
+                    else if (arrowActive)
+                    {
+                        Destroy(currentArrow);
+                        arrowActive = false;
+                        _gameManager.ArrowCount--;
+                        _gameManager.releaseArrows -= ReleaseArrow;
+
+                    }
                 }
             }
-        }
-
-        if (Input.GetMouseButton(0) && arrowActive)
-        {
-            UpdateArrow();
-        }
-
-        if (Input.GetMouseButtonUp(0) && arrowActive)
-        {
-            ReleaseArrow();
         }
     }
 
@@ -55,46 +60,51 @@ public GameObject arrowPrefab;
         return hitCollider != null && hitCollider.gameObject == gameObject;
     }
 
-    void StartDrawingArrow()
+    IEnumerator DrawArrowCoroutine()
     {
         arrowActive = true;
         arrowStartPos = transform.position;
         currentArrow = Instantiate(arrowPrefab, arrowStartPos, Quaternion.identity);
 
         _gameManager.ArrowCount++;
+        _gameManager.releaseArrows += ReleaseArrow;
+        
+        while (Input.GetMouseButton(0))
+        {
+            UpdateArrow();
+            yield return null;
+        }
     }
 
     void UpdateArrow()
     {
-   Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        Vector3 direction = mousePos - arrowStartPos;
 
-    // Calculate the direction from the center of the object to the mouse cursor
-    Vector3 direction = mousePos - arrowStartPos;
+        if (direction.magnitude > 1f)
+        {
+            float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg + 90;
+            currentArrow.transform.rotation = Quaternion.AngleAxis(angle, Vector3.forward);
 
-    // Calculate the angle between the arrow and the direction to the cursor
-    float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg + 90;
+            float clampedDistance = Mathf.Clamp(direction.magnitude, 1f, maxArrowDistance);
+            currentArrow.transform.localScale = new Vector3(1f, clampedDistance * 0.2f, 1f);
+        }
 
-    // Set the arrow's rotation to match the direction to the cursor
-    currentArrow.transform.rotation = Quaternion.AngleAxis(angle, Vector3.forward);
-
-    // Clamp the arrow's length to maxArrowDistance
-    float clampedDistance = Mathf.Clamp(direction.magnitude, 1f, maxArrowDistance);
-
-    // Set the arrow's scale based on clamped distance, scaling perpendicularly
-    currentArrow.transform.localScale = new Vector3(1f, clampedDistance * 0.3f, 1f);
     }
 
     void ReleaseArrow()
     {
         arrowActive = false;
 
-        Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        float distance = Vector3.Distance(arrowStartPos, mousePos);
+        float angle = Mathf.Atan2(currentArrow.transform.up.y, currentArrow.transform.up.x) * Mathf.Rad2Deg + 90;
+        float clampedDistance = Mathf.Clamp(currentArrow.transform.localScale.y / 0.2f, 1f, maxArrowDistance);
 
-        float force = Mathf.Clamp(distance, 0f, maxArrowDistance) / maxArrowDistance * maxForce;
+        Vector3 forceDirection = Quaternion.AngleAxis(angle, Vector3.forward) * Vector3.up;
+
+        float force = clampedDistance / maxArrowDistance * maxForce;
 
         Rigidbody2D rb = GetComponent<Rigidbody2D>();
-        rb.AddForce((mousePos - arrowStartPos).normalized * force, ForceMode2D.Impulse);
+        rb.AddForce(forceDirection * force, ForceMode2D.Impulse);
 
         _gameManager.ArrowCount--;
 

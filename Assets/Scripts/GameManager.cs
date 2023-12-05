@@ -12,6 +12,8 @@ public class GameManager : MonoBehaviour
     public int TeamtwoScore { get { return _teamtwoScore; } set { _teamtwoScore = value; } }
     public GameState CurrentGameState { get { return (GameState)_gameState; } set { _gameState = (int)value; } }
     public int ArrowCount { get { return _arrowCount; } set { _arrowCount = value; } }
+    public delegate void ReleaseArrowDelegate();
+    public ReleaseArrowDelegate releaseArrows;
 
     private int _gameState;
     private int _teamoneScore;
@@ -22,6 +24,12 @@ public class GameManager : MonoBehaviour
             _instance = this;
         } else {
             Destroy(this.gameObject);
+        }
+    }
+
+    public void endTurn() {
+        if (ArrowCount == 3) {
+            releaseArrows();
         }
     }
 }

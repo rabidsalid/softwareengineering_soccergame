@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 8760273339812384891}
   - component: {fileID: 5413860277553302777}
   m_Layer: 0
-  m_Name: temparrow
+  m_Name: arrow
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -81,4 +81,4 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
-  m_SpriteSortPoint: 1
+  m_SpriteSortPoint: 0
