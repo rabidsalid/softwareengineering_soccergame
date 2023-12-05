@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -10,10 +11,12 @@ public class GameManager : MonoBehaviour
     public int TeamoneScore { get { return _teamoneScore; } set { _teamoneScore = value; } }
     public int TeamtwoScore { get { return _teamtwoScore; } set { _teamtwoScore = value; } }
     public GameState CurrentGameState { get { return (GameState)_gameState; } set { _gameState = (int)value; } }
+    public int ArrowCount { get { return _arrowCount; } set { _arrowCount = value; } }
 
     private int _gameState;
     private int _teamoneScore;
     private int _teamtwoScore;
+    private int _arrowCount;
     private void Awake() {
         if (_instance == null) {
             _instance = this;
